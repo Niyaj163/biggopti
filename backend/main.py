@@ -18,11 +18,11 @@ print("Biggopti Scraper & AI Digest Engine Starting...")
 print("==================================================")
 
 if not GEMINI_API_KEY or GEMINI_API_KEY == "your_gemini_api_key_here":
-    print("⚠️ WARNING: GEMINI_API_KEY is not configured in backend/.env!")
+    print("[WARNING] GEMINI_API_KEY is not configured in backend/.env!")
     print("   Refer to docs/THIRD_PARTY_KEYS.md for step-by-step setup.")
 
 if not SUPABASE_URL or SUPABASE_URL == "https://your-project-ref.supabase.co":
-    print("⚠️ WARNING: SUPABASE_URL is not configured in backend/.env!")
+    print("[WARNING] SUPABASE_URL is not configured in backend/.env!")
 
 def initialize_seed_data():
     """Seeds the database with initial circulars if running for the first time."""
@@ -30,7 +30,7 @@ def initialize_seed_data():
     if seed_file.exists():
         with open(seed_file, 'r', encoding='utf-8') as f:
             seeds = json.load(f)
-        print(f"✅ Loaded {len(seeds)} seed circulars from {seed_file.name}")
+        print(f"[OK] Loaded {len(seeds)} seed circulars from {seed_file.name}")
         return seeds
     return []
 
