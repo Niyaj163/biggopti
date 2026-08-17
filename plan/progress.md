@@ -69,11 +69,10 @@ biggopti/
 - None yet.
 
 ### NEXT (start of next session)
-1. Link remote GitHub repo (`git remote add origin ...` and `git push -u origin main`).
-2. Scaffold the folder structure: `backend/`, `db/`, `docs/`, `.github/workflows/`.
-3. Set up Supabase schema & 20 seeded demo circulars.
-4. Set up Python scraper environment & Gemini API parsing.
-5. Setup Flutter dependencies (Riverpod, Dio, Google Fonts, Supabase).
+1. Setup Flutter core dependencies (`flutter_riverpod`, `dio`, `google_fonts`, `supabase_flutter`).
+2. Implement core Flutter models (`Circular`, `UserProfile`, `Bookmark`).
+3. Implement theme system (Forest Green `#0A4D3C`, Sage `#9EC5B2`, Coral `#FF8B8B`, Lavender `#B1A7F2`) and Hind Siliguri Bangla font support.
+4. Build onboarding and home feed UI.
 
 ---
 
@@ -86,6 +85,23 @@ Initialize local Git repository, configure `.gitignore` for Flutter + Python ful
 1. Updated [`.gitignore`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/.gitignore) to exclude Python virtual environments (`venv/`, `.venv/`), bytecode caches, and `.env` secrets files.
 2. Initialized local Git repository (`git init` with `main` branch).
 3. Created initial local Git commit with all base Flutter app files and project plan documents ([`planning.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/plan/planning.md) & [`progress.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/plan/progress.md)).
+4. Pushed repository to GitHub (`https://github.com/Niyaj163/biggopti.git`).
 
 ---
+
+## Session 3 - 17 August 2026
+
+### Goal
+Incorporate cPanel hosting decision into architecture, create explicit third-party key setup documentation, and scaffold backend & database infrastructure files.
+
+### What we did
+1. Created [`THIRD_PARTY_KEYS.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/docs/THIRD_PARTY_KEYS.md) providing step-by-step instructions for acquiring and configuring all API keys (`GEMINI_API_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `BDAPPS_APP_ID`, `BDAPPS_APP_PASSWORD`).
+2. Scaffolded [`backend/.env.example`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/.env.example) template file for local and cPanel deployment.
+3. Created [`db/schema.sql`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/db/schema.sql) containing PostgreSQL DDL for 4 core tables (`circulars`, `subscribers`, `bookmarks`, `scraper_logs`) with Row Level Security (RLS) policies.
+4. Created [`db/seed_circulars.json`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/db/seed_circulars.json) containing 20 authentic demo circulars (Bangla job circulars: BPSC, Central Bank AD, NU, Sonali/Janata Bank, Primary Teacher, Police SI).
+5. Created [`backend/requirements.txt`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/requirements.txt), [`backend/prompts/parse_circular.txt`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/prompts/parse_circular.txt) (Gemini Flash Bangla prompt), and [`backend/main.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/main.py).
+6. Updated [`planning.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/plan/planning.md) (Decision 13: cPanel Backend Hosting & Cron Jobs).
+
+---
+
 

@@ -256,10 +256,10 @@ GitHub Actions cron fires
 | PDF parse | pdfplumber | Robust Bangla Unicode extraction. |
 | AI | google-genai (Gemini 2.5 Flash) | Free tier, strong Bangla, JSON mode. |
 | DB | Supabase (PostgreSQL) | Realtime, REST auto-gen, free tier. |
-| Cron | GitHub Actions | $0.00, 2000 free min/month. |
+| Hosting / Cron | cPanel (Python App / cPanel Cron Job) or GitHub Actions | User hosting preference: cPanel server for backend execution. |
 | Telco | BDapps CaaS + SMS API | Competition platform. |
 
-Total infrastructure cost: 0 BDT for personal usage; revenue-share only when monetized through BDapps.
+Total infrastructure cost: 0 BDT / minimal cPanel host cost; revenue-share only when monetized through BDapps.
 
 ---
 
@@ -525,6 +525,7 @@ All 12 open decisions have been agreed. They are:
 10. **Solo build** (heavily leveraging AI sub-agents for parallel work).
 11. **Push notifications**: Topic-based (subscribers join topics like `bank`, `govt`, `varsity`, `high_priority`).
 12. **Admin auth**: Hardcoded PIN in env var. Login screen compares input to PIN. Full admin dashboard (scraper logs + run-now button + PIN) is kept.
+13. **Backend Hosting**: cPanel hosting environment (supporting cPanel Cron Jobs / Python App) for automated scraping, DB synchronization, and API integration. All third-party secrets managed via cPanel `.env` configuration.
 
 ---
 
