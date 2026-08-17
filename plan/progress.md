@@ -69,11 +69,23 @@ biggopti/
 - None yet.
 
 ### NEXT (start of next session)
-1. Create the GitHub repo (private initially, public before submission).
-2. Scaffold the folder structure: `app/`, `backend/`, `db/`, `docs/`, `.github/workflows/`.
-3. Generate the `.gitignore` tailored for Flutter + Python full-stack.
-4. Generate a starter `README.md` with setup instructions.
-5. Confirm Flutter SDK + Python venv are installed and working.
-6. Set up the Supabase project (free tier).
+1. Link remote GitHub repo (`git remote add origin ...` and `git push -u origin main`).
+2. Scaffold the folder structure: `backend/`, `db/`, `docs/`, `.github/workflows/`.
+3. Set up Supabase schema & 20 seeded demo circulars.
+4. Set up Python scraper environment & Gemini API parsing.
+5. Setup Flutter dependencies (Riverpod, Dio, Google Fonts, Supabase).
 
 ---
+
+## Session 2 - 17 August 2026
+
+### Goal
+Initialize local Git repository, configure `.gitignore` for Flutter + Python full-stack, make initial commit, and prepare for GitHub remote link.
+
+### What we did
+1. Updated [`.gitignore`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/.gitignore) to exclude Python virtual environments (`venv/`, `.venv/`), bytecode caches, and `.env` secrets files.
+2. Initialized local Git repository (`git init` with `main` branch).
+3. Created initial local Git commit with all base Flutter app files and project plan documents ([`planning.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/plan/planning.md) & [`progress.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/plan/progress.md)).
+
+---
+
