@@ -116,7 +116,30 @@ Review user's BDapps reference project (`Hands_on_project_NADB-main`), extract f
    - `/unsubscribe.php` (`user_mobile`) -> Unsubscribes user and triggers mandatory app logout.
 3. Updated [`planning.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/plan/planning.md) Section 15 and [`THIRD_PARTY_KEYS.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/docs/THIRD_PARTY_KEYS.md) Section 3 to document the cPanel PHP gateway architecture and compliance requirements.
 
+## Session 5 - 17 August 2026
+
+### Goal
+Configure Flutter dependencies, build design system theme & Bangla typography (`Hind Siliguri`), construct data models & Riverpod state providers, connect Supabase live query feed, and build core Flutter UI screens.
+
+### What we did
+1. Configured dependencies in [`pubspec.yaml`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/pubspec.yaml): `flutter_riverpod`, `supabase_flutter`, `google_fonts`, `dio`, `shared_preferences`, `intl`, `url_launcher`.
+2. Created design system token constants in [`lib/core/constants/app_colors.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/core/constants/app_colors.dart) (Deep Forest Green `#0A4D3C`, Sage `#9EC5B2`, Coral `#FF8B8B`, Lavender `#B1A7F2`, Soft Slate `#F4F6F4`).
+3. Built [`lib/core/theme/app_theme.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/core/theme/app_theme.dart) featuring `Hind Siliguri` typography.
+4. Created core data models: [`lib/models/circular_model.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/models/circular_model.dart) and [`lib/models/user_profile.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/models/user_profile.dart).
+5. Implemented [`lib/core/services/supabase_service.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/core/services/supabase_service.dart) for fetching circulars from Supabase database.
+6. Implemented [`lib/core/services/bdapps_service.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/core/services/bdapps_service.dart) with `BdappsServiceMock` and `BdappsServiceReal`.
+7. Created Riverpod state providers: [`lib/providers/circular_provider.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/providers/circular_provider.dart) and [`lib/providers/bookmark_provider.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/providers/bookmark_provider.dart).
+8. Built Flutter UI views:
+   - [`lib/views/home/home_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/home/home_screen.dart) (Category filter bar: সব / সরকারি / ব্যাংক / বিশ্ববিদ্যালয়, BDapps SMS banner, live circular list).
+   - [`lib/views/home/widgets/circular_card.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/home/widgets/circular_card.dart) (Card with category badge, priority tag, deadline indicator, 3-bullet Bangla summary, and bookmark toggle).
+   - [`lib/views/detail/circular_detail_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/detail/circular_detail_screen.dart) (Detailed digest screen with external PDF launcher).
+   - [`lib/views/bookmarks/bookmarks_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/bookmarks/bookmarks_screen.dart) (Saved circulars view).
+   - [`lib/views/eligibility/eligibility_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/eligibility/eligibility_screen.dart) (Personalized eligibility checker).
+   - [`lib/views/paywall/paywall_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/paywall/paywall_screen.dart) (BDapps SMS subscription flow & OTP verification).
+9. Verified zero errors with `flutter analyze`.
+
 ---
+
 
 
 
