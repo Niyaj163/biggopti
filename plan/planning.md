@@ -363,27 +363,31 @@ CREATE TABLE scraper_logs (
 
 ---
 
-## 15. BDapps Integration Plan
+## 15. BDapps Integration Plan (cPanel Gateway Architecture)
 
-### 15.1 Subscription (CaaS) flow
-1. User taps "Subscribe" (3 BDT/day) on paywall.
-2. Flutter sends POST /subscription/userSubscription with action "1".
-3. BDapps sends PIN to user's phone via USSD.
-4. User enters PIN in app -> BDapps confirms.
-5. App saves phone_number to Supabase `subscribers` table.
+### 15.1 Core Architecture
+Calls from Flutter are proxied through a **cPanel PHP gateway** (`https://<your-cpanel-domain>/bdapps_gateway/`) to secure `appId` and `appPassword`. Payloads are sent via `application/x-www-form-urlencoded`.
 
-### 15.2 SMS broadcast (offline digest)
-- Triggered manually from Python scraper when `is_high_priority = true`.
-- Endpoint: POST /sms/send.
-- Payload: Bangla summary, <= 160 chars, destination = each active subscriber.
+### 15.2 Gateway Endpoints & Flow
+1. **Check Subscription Status**: `POST /check_subscription.php` (`user_mobile`)
+   - `S1000` -> `REGISTERED`
+   - `E1951` / null -> `UNREGISTERED`
+2. **Request OTP**: `POST /send_otp.php` (`user_mobile`)
+   - `S1000` -> Returns `referenceNo` for OTP verification.
+   - `E1351` -> User already registered.
+3. **Verify OTP**: `POST /verify_otp.php` (`Otp`, `referenceNo`)
+   - `S1000` -> Activation successful (`REGISTERED`).
+4. **Unsubscribe**: `POST /unsubscribe.php` (`user_mobile`)
+   - `S1000` -> Unsubscribed (`UNREGISTERED`). Trigger automatic app logout callback.
 
-### 15.3 Build strategy: mock-first, then real
-- We have the BDapps API spec files locally, so no sandbox registration is needed.
-- Build `BdappsService` as an abstract interface with two implementations:
-  - `BdappsServiceMock` - canned responses, used throughout development and demo day for safety.
-  - `BdappsServiceReal` - calls the actual BDapps endpoints using the spec files.
-- A single `useMock` flag in `app_config.dart` toggles between them.
-- Wire the real implementation after all screens are stable (target day 8).
+### 15.3 BDapps Compliance Requirements
+- **Pricing Copy**: Must explicitly state `2.78 BDT/day` (or `3.00 BDT/day` incl. VAT+SD+SC for Robi & Airtel users).
+- **Mandatory Unsubscription Logout**: On unsubscription success, automatically clear session and log user out.
+
+### 15.4 Build Strategy: Mock-First, Then Real Gateway
+- `BdappsServiceMock`: Uses canned responses during local UI development.
+- `BdappsServiceReal`: Calls cPanel PHP gateway (`BdAppsApi`) based on reference implementation.
+- Toggled via `useMock` in `app_config.dart`.
 
 ---
 

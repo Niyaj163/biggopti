@@ -102,6 +102,21 @@ Incorporate cPanel hosting decision into architecture, create explicit third-par
 5. Created [`backend/requirements.txt`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/requirements.txt), [`backend/prompts/parse_circular.txt`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/prompts/parse_circular.txt) (Gemini Flash Bangla prompt), and [`backend/main.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/main.py).
 6. Updated [`planning.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/plan/planning.md) (Decision 13: cPanel Backend Hosting & Cron Jobs).
 
+## Session 4 - 17 August 2026
+
+### Goal
+Review user's BDapps reference project (`Hands_on_project_NADB-main`), extract full API endpoints, CaaS subscription flow, and compliance requirements, and document them in planning & key guides.
+
+### What we did
+1. Analyzed reference files: `lib/services/bdapps_api.dart`, `lib/services/bdapps_api_service.dart`, and `lib/providers/bdapps_subscription_provider.dart` from `Hands_on_project_NADB-main`.
+2. Extracted the 4 core cPanel PHP gateway endpoints:
+   - `/check_subscription.php` (`user_mobile`) -> Returns `REGISTERED` (`S1000`) or `UNREGISTERED` (`E1951`).
+   - `/send_otp.php` (`user_mobile`) -> Sends OTP, returns `referenceNo` or `E1351` (already registered).
+   - `/verify_otp.php` (`Otp`, `referenceNo`) -> Verifies OTP (`S1000`).
+   - `/unsubscribe.php` (`user_mobile`) -> Unsubscribes user and triggers mandatory app logout.
+3. Updated [`planning.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/plan/planning.md) Section 15 and [`THIRD_PARTY_KEYS.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/docs/THIRD_PARTY_KEYS.md) Section 3 to document the cPanel PHP gateway architecture and compliance requirements.
+
 ---
+
 
 

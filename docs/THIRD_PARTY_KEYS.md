@@ -51,18 +51,22 @@ Whenever a backend file requires a secret or URL, it will read from the `.env` f
 
 ---
 
-### 3. BDapps API Credentials (`BDAPPS_APP_ID`, `BDAPPS_APP_PASSWORD`)
+### 3. BDapps API Credentials & cPanel Gateway
+
 > Note: For initial development and demo, `BdappsServiceMock` uses canned responses so you don't need real credentials right away!
 
-When deploying live to BDapps:
-1. Log into your account on [BDapps Developer Portal](https://bdapps.com).
-2. Go to your registered App details.
-3. Copy **Application ID** (`BDAPPS_APP_ID`) and **Application Password** (`BDAPPS_APP_PASSWORD`).
-4. Add to `.env`:
-   ```env
-   BDAPPS_APP_ID=APP_000123
-   BDAPPS_APP_PASSWORD=your_bdapps_secret_password
-   ```
+When deploying live to BDapps using cPanel gateway (based on your reference implementation):
+1. **cPanel Base Gateway URL**: Your PHP gateway folder URL (e.g. `https://your-domain.com/NADB26121` or `https://your-domain.com/bdapps_gateway`).
+2. **BDapps Developer Portal Credentials**:
+   - `BDAPPS_APP_ID` (e.g. `APP_139347`)
+   - `BDAPPS_APP_PASSWORD` (e.g. `2dd1a269dae6c481e11aadd988037e4d`)
+3. **cPanel Gateway Files**:
+   - `check_subscription.php`: Receives `user_mobile`, calls BDapps API, returns status (`REGISTERED` / `UNREGISTERED`).
+   - `send_otp.php`: Receives `user_mobile`, requests OTP, returns `referenceNo`.
+   - `verify_otp.php`: Receives `Otp` & `referenceNo`, activates subscription (`S1000`).
+   - `unsubscribe.php`: Receives `user_mobile`, unsubscribes user (`UNREGISTERED`).
+4. **Mandatory Compliance Rule**: When a user unsubscribes, the app must immediately log them out.
+
 
 ---
 
