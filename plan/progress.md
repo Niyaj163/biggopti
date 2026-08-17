@@ -138,7 +138,21 @@ Configure Flutter dependencies, build design system theme & Bangla typography (`
    - [`lib/views/paywall/paywall_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/paywall/paywall_screen.dart) (BDapps SMS subscription flow & OTP verification).
 9. Verified zero errors with `flutter analyze`.
 
+## Session 6 - 17 August 2026
+
+### Goal
+Build live web scrapers for Bangladeshi notice portals, integrate `pdfplumber` + Gemini 2.5 Flash AI PDF parsing engine, enable SHA256 deduplication, log runs to Supabase `scraper_logs`, and create cPanel Cron Job deployment guide.
+
+### What we did
+1. Created [`backend/scrapers/base_scraper.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/base_scraper.py) providing SHA256 hash deduplication, HTTP page fetching, and PDF downloading logic.
+2. Created scrapers: [`backend/scrapers/bpsc.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/bpsc.py) (BPSC notices) and [`backend/scrapers/bb.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/bb.py) (Bangladesh Bank career notices).
+3. Created [`backend/ai_parser.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/ai_parser.py) implementing `pdfplumber` text extraction and Gemini 2.5 Flash structured Bangla JSON parsing (`response_mime_type="application/json"`).
+4. Updated [`backend/main.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/main.py) to connect live to Supabase, run scrapers, check PDF hashes for duplicates, call Gemini 2.5 Flash, auto-insert new digested Bangla circulars, and record run logs in `scraper_logs` table.
+5. Created [`backend/cpanel_cron.sh`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/cpanel_cron.sh) for cPanel Cron Jobs.
+6. Created [`docs/CPANEL_DEPLOYMENT.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/docs/CPANEL_DEPLOYMENT.md) detailing step-by-step cPanel hosting setup for Python App and Cron Jobs.
+
 ---
+
 
 
 
