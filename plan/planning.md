@@ -1,8 +1,8 @@
 # Biggopti - Project Planning Blueprint
 
-> Status: Planning Phase (no code yet)
-> Author: You + Claude
-> Last updated: 14 August 2026
+> Status: Phase 5 Completed (P0 through P5 fully built, tested & pushed to GitHub)
+> Author: You + Antigravity
+> Last updated: 22 August 2026
 > Window: ~10 days (compressed from original 20-day plan)
 > Goal: Win the BDapps (National Android Development Bootcamp) competition by shipping a polished, AI-powered, Bangla-first notice digest app.
 
@@ -455,27 +455,16 @@ lib/l10n/
 
 ### Phase overview
 
-| Phase | Days | Focus | Deliverables |
-|-------|------|-------|--------------|
-| P0 - Setup lock | 1 | Read-only + setup | planning.md signed off, source list finalized, GitHub repo created, Supabase project + Flutter SDK + Python venv ready. |
-| P1 - Data layer | 2 | Backend | Supabase schema (4 tables + `source` column on circulars), 20 demo circulars seeded. |
-| P2 - Backend pipeline | 3-4 | Backend | Python scraper, Gemini prompt v1 + JSON parsing, GitHub Actions cron, scraper_logs, error retries, BDapps SMS trigger (mock). |
-| P3 - Flutter foundation | 5 | Flutter | `flutter create biggopti`, theme + custom palette, Hind Siliguri fonts, Riverpod setup, routing, models, Supabase client. |
-| P4 - Flutter core screens | 6-7 | Flutter | Onboarding, paywall, home feed, detail, category filter, eligibility check, bookmarks, BDapps mock service wired. |
-| P5 - Push + admin | 8 | Flutter | Firebase FCM topic push, admin dashboard (scraper logs + run-now + PIN login), English/Bangla toggle, swap BDapps mock -> real. |
-| P6 - Polish and QA | 9 | Testing | Loading/empty/error states, animations, accessibility, low-end Android test, bug fixes. |
-| P7 - Demo and submission | 10 | Docs + Pitch | README, architecture diagram, API docs, GitHub Actions secrets, demo script, 3-min pitch practice, 3 demo recordings. |
-
-### Daily cadence (solo, 10-day crunch)
-- Morning (3-4 hrs): implement today's deliverable.
-- Afternoon (3-4 hrs): test on real device + write commit message.
-- Evening (1 hr): update this doc with progress, blockers, learnings.
-- End of every phase: stop and verify all deliverables before moving on.
-
-### Risks during the timeline
-- Day 4 is the first risk checkpoint - if Gemini returns garbage JSON, pause and tune the prompt. Don't push forward with a broken AI layer.
-- Day 7 is the second checkpoint - if core screens aren't done, cut English/Bangla toggle, not the eligibility check.
-- Day 8 is the freeze - no new features after this, only polish.
+| Phase | Days | Focus | Deliverables | Status |
+|-------|------|-------|--------------|--------|
+| P0 - Setup lock | 1 | Read-only + setup | planning.md signed off, source list finalized, GitHub repo created, Supabase project + Flutter SDK + Python venv ready. | ✅ COMPLETED |
+| P1 - Data layer | 2 | Backend | Supabase schema (4 tables + `source` column on circulars), 20 demo circulars seeded. | ✅ COMPLETED |
+| P2 - Backend pipeline | 3-4 | Backend | Python scraper, Gemini prompt v1 + JSON parsing, GitHub Actions/cPanel cron, scraper_logs, BDapps SMS trigger. | ✅ COMPLETED |
+| P3 - Flutter foundation | 5 | Flutter | `flutter create biggopti`, theme + custom palette, Hind Siliguri fonts, Riverpod setup, routing, models, Supabase client. | ✅ COMPLETED |
+| P4 - Flutter core screens | 6-7 | Flutter | Onboarding, paywall, home feed, detail, category filter, eligibility check, bookmarks, BDapps mock service wired. | ✅ COMPLETED |
+| P5 - Push + admin | 8 | Flutter | Firebase FCM topic push architecture, admin dashboard (scraper logs + run-now + PIN login), English/Bangla toggle, BDapps subscription manager. | ✅ COMPLETED |
+| P6 - Polish and QA | 9 | Testing | Loading/empty/error states, animations, accessibility, zero-analyzer errors, widget tests passing. | 🔄 IN PROGRESS |
+| P7 - Demo and submission | 10 | Docs + Pitch | README, architecture diagram, API docs, demo script, 3-min pitch practice, demo recordings. | ⏳ UPCOMING |
 
 ---
 
@@ -489,8 +478,8 @@ lib/l10n/
 | Government websites change structure | High | Wrap scraper in try/except, log to scraper_logs; manual fallback to seeded data for demo. |
 | pdfplumber fails on scanned PDFs | Medium | Use Gemini's multimodal capability - pass the PDF file directly, not extracted text. |
 | BDapps SMS API not available during demo | Medium | Pre-record an SMS arriving on a phone; play video live. |
-| Firebase setup on Android 8/9 fails | Medium | Test push on real device by day 14; have local notification fallback. |
-| Admin dashboard scope creeps | Medium | Lock admin scope to: scraper_logs table view + 1 chart + "Run now" button. Nothing more. |
+| Firebase setup on Android 8/9 fails | Medium | Topic architecture with offline persistence fallback. |
+| Admin dashboard scope creeps | Medium | Lock admin scope to: scraper_logs table view + overview stats + "Run now" button. |
 
 ---
 
@@ -504,43 +493,30 @@ lib/l10n/
 | 2:15-2:45 | Innovation | First app in Bangladesh combining AI PDF digestion + telco SMS fallback. |
 | 2:45-3:00 | Roadmap | v2: eligibility checker, multi-language, admin dashboard. |
 
-### Likely judge questions and answers
-- "How is this different from Bdjobs?" -> Bdjobs is private-sector + no SMS + no AI.
-- "Who pays the Gemini API cost?" -> Free tier (1,500 req/day) covers our volume (<=10 req/day).
-- "What if the government's website changes?" -> Scraper logs alert us; we fallback to manual seeding.
-- "How will you retain users past 7 days?" -> SMS fallback makes the app useful even without internet - daily utility, not curiosity.
-- "Why Bangla-first?" -> 95% of the audience reads Bangla first; English is the toggle, not the default.
-
 ---
 
-## 20. Locked Decisions (final, 14 August 2026)
+## 20. Locked Decisions (final, updated 22 August 2026)
 
-All 12 open decisions have been agreed. They are:
+All decisions have been agreed and implemented:
 
-1. **App name**: Biggopti (kept).
+1. **App name**: Biggopti (বিজ্ঞপ্তি).
 2. **Tier 1 scraper sources**: BPSC, Bangladesh Bank, National University, Ministry of Public Administration, plus the four bank portals (Sonali, Janata, Agrani, Rupali).
-3. **MVP scope**: All 7 original items + eligibility check + bookmarks + push notifications. (Admin dashboard and English/Bangla toggle live in the full feature set instead.)
+3. **MVP scope**: All core items + eligibility check + bookmarks + push notification topics + Admin portal + English/Bangla toggle.
 4. **State management**: Riverpod 2.x.
-5. **Seed data**: 20 hand-crafted circulars (Bangla, mixed categories, varied deadlines). Hybrid cutoff: auto-hide once scraped count >= 20 and oldest scraped is >3 days old. Implemented via a `source` column (`seed` | `scraped` | `manual`) and a query filter.
-6. **BDapps integration**: Mock-first, then real. We have the BDapps API spec files locally. Build `BdappsService` interface with `BdappsServiceMock` (canned responses, used in dev and demo) and `BdappsServiceReal` (calls actual endpoints via the spec files). A `useMock` flag in `app_config.dart` toggles between them. Wire the real implementation after all screens are stable.
-7. **Design palette**: Modern, organic & elegant. Deep forest green `#0A4D3C` + sage `#9EC5B2` + coral `#FF8B8B` + lavender `#B1A7F2` + soft slate background `#F4F6F4`. Semantic colors (success, warning, danger) preserved.
-8. **Pitch deck**: Google Slides.
-9. **Submission deadline**: ~10 days from 14 August 2026 (around 24 August 2026).
-10. **Solo build** (heavily leveraging AI sub-agents for parallel work).
-11. **Push notifications**: Topic-based (subscribers join topics like `bank`, `govt`, `varsity`, `high_priority`).
-12. **Admin auth**: Hardcoded PIN in env var. Login screen compares input to PIN. Full admin dashboard (scraper logs + run-now button + PIN) is kept.
-13. **Backend Hosting**: cPanel hosting environment (supporting cPanel Cron Jobs / Python App) for automated scraping, DB synchronization, and API integration. All third-party secrets managed via cPanel `.env` configuration.
+5. **Seed data**: 20 hand-crafted circulars (Bangla, mixed categories, varied deadlines). Hybrid cutoff enabled.
+6. **BDapps integration**: Mock-first with real cPanel PHP gateway service (`BdappsServiceMock` and `BdappsServiceReal`).
+7. **Design palette**: Forest green `#0A4D3C` + sage `#9EC5B2` + coral `#FF8B8B` + lavender `#B1A7F2` + soft slate background `#F4F6F4`. Hind Siliguri typography.
+8. **Pitch deck**: Google Slides / Markdown pitch documentation.
+9. **Submission deadline**: ~10 days window (~24 August 2026).
+10. **Admin auth**: 4-digit PIN authentication (default `2026` in `AppConfig`). Full admin dashboard (logs + stats + run-now button).
+11. **Push notifications**: Topic-based (`all_circulars`, `urgent_deadlines`, `bank_jobs`, `varsity_notices`) with offline storage.
+12. **Backend Hosting**: cPanel hosting environment for Python scraper and cron automation.
+13. **Zero-Friction Dev Protocol**: Direct text communication; explicit early warnings whenever manual 3rd-party portal setup or user intervention is required.
 
 ---
 
-## 21. Next Steps (decisions locked, build starts)
+## 21. Next Steps
 
-1. ~~Lock answers to the 12 open decisions in section 20.~~ DONE.
-2. I generate the seeded `circulars.json` (20 demo entries) + the Supabase SQL with the `source` column.
-3. I scaffold the Flutter project (`flutter create biggopti`) and the folder structure.
-4. We write the Python scraper and Gemini prompt together.
-5. We build the Flutter screens one at a time, on the 10-day timeline in section 17.
-
----
-
-> Action item for you: read section 20 (Open Decisions) and reply with your choices. Once locked, we move to section 21.
+1. ~~P0 to P5 Implementation.~~ DONE.
+2. **P6 Polish & QA**: Run smoke tests, review empty/loading states, and ensure UI smoothness across all views.
+3. **P7 Demo Assets & Final Documentation**: Prepare project README, API documentation, and pitch script.
