@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 
 from ai_parser import AIParser
-from scrapers import BPSCScraper, BangladeshBankScraper
+from scrapers import BPSCScraper, BangladeshBankScraper, NUScraper
 
 # Load environment variables
 env_path = Path(__file__).resolve().parent / '.env'
@@ -15,6 +15,7 @@ load_dotenv(dotenv_path=env_path)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+TARGET_CIRCULARS_COUNT = 30
 
 print("==================================================")
 print("Biggopti Scraper & AI Digest Engine Starting...")
@@ -29,7 +30,7 @@ def get_supabase_client() -> Client | None:
     return None
 
 def initialize_seed_data(supabase: Client | None):
-    """Seeds the database with 20 demo circulars if running for the first time."""
+    """Seeds the database with fallback circulars if running for the first time."""
     seed_file = Path(__file__).resolve().parent.parent / 'db' / 'seed_circulars.json'
     if not seed_file.exists():
         return []
@@ -43,9 +44,9 @@ def initialize_seed_data(supabase: Client | None):
             count = res.count if res.count is not None else len(res.data)
             print(f"[DB] Current circular count in Supabase: {count}")
             if count == 0:
-                print("[DB] Seeding 20 demo circulars into Supabase...")
+                print("[DB] Initializing seed circulars into Supabase...")
                 supabase.table('circulars').insert(seeds).execute()
-                print("[OK] Successfully seeded 20 circulars into Supabase!")
+                print("[OK] Successfully seeded fallback circulars into Supabase!")
         except Exception as e:
             print(f"[NOTE] Supabase table query notice: {e}")
     return seeds
@@ -65,7 +66,7 @@ def log_scraper_run(supabase: Client | None, source_url: str, pdf_hash: str, sta
         print(f"[LOG] Scraper logging notice: {e}")
 
 def run_scrapers():
-    """Runs all scrapers, processes new PDFs with Gemini Flash, and stores in Supabase."""
+    """Runs all scrapers to fetch the 30 latest circulars, parses with Gemini Flash, and stores in DB."""
     supabase = get_supabase_client()
     initialize_seed_data(supabase)
 
@@ -74,14 +75,23 @@ def run_scrapers():
         return
 
     ai_parser = AIParser(api_key=GEMINI_API_KEY)
-    scrapers = [BPSCScraper(), BangladeshBankScraper()]
+    scrapers = [BPSCScraper(), BangladeshBankScraper(), NUScraper()]
+
+    total_processed = 0
 
     for scraper in scrapers:
+        if total_processed >= TARGET_CIRCULARS_COUNT:
+            print(f"\n[INFO] Reached target feed batch of {TARGET_CIRCULARS_COUNT} circulars.")
+            break
+
         print(f"\n[SCRAPE] Starting scraper: {scraper.name} ({scraper.source_url})...")
         notices = scraper.scrape_notices()
         print(f"[SCRAPE] Found {len(notices)} potential notice links from {scraper.name}.")
 
         for notice in notices:
+            if total_processed >= TARGET_CIRCULARS_COUNT:
+                break
+
             pdf_url = notice['pdf_url']
             print(f"[FETCH] Checking PDF: {pdf_url}")
             pdf_bytes = scraper.fetch_pdf_bytes(pdf_url)
@@ -107,18 +117,28 @@ def run_scrapers():
             digested_circular = ai_parser.parse_circular(pdf_bytes, pdf_url, pdf_hash)
 
             if digested_circular:
+                # Ensure category is inherited if AI did not assign
+                if 'category' not in digested_circular or not digested_circular['category']:
+                    digested_circular['category'] = notice.get('category', 'govt')
+                digested_circular['source'] = 'scraped'
+
                 print(f"[OK] Digest Created: {digested_circular.get('title')}")
                 if supabase:
                     try:
                         supabase.table('circulars').insert(digested_circular).execute()
                         print("[DB] Digested circular inserted into Supabase!")
                         log_scraper_run(supabase, pdf_url, pdf_hash, "SUCCESS")
+                        total_processed += 1
                     except Exception as e:
                         print(f"[DB] Insert error: {e}")
                         log_scraper_run(supabase, pdf_url, pdf_hash, "FAILED", str(e))
+                else:
+                    total_processed += 1
             else:
                 print(f"[WARNING] AI parsing returned null for {pdf_url}")
                 log_scraper_run(supabase, pdf_url, pdf_hash, "FAILED", "AI parsing returned null")
+
+    print(f"\n[SUMMARY] Total new real circulars processed: {total_processed}")
 
 def main():
     print("Executing Biggopti live scraper & AI pipeline...")

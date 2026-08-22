@@ -33,4 +33,4 @@ class BangladeshBankScraper(BaseScraper):
                 'category': 'bank'
             })
 
-        return notices[:5]
+        return notices[:15]  # Process up to 15 latest real notices

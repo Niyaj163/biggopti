@@ -3,13 +3,13 @@ from bs4 import BeautifulSoup
 from .base_scraper import BaseScraper
 from typing import List, Dict, Any
 
-class BPSCScraper(BaseScraper):
-    """Scraper for Bangladesh Public Service Commission (BPSC)."""
+class NUScraper(BaseScraper):
+    """Scraper for National University (NU) Notice Board."""
 
     def __init__(self):
         super().__init__(
-            name="BPSC",
-            source_url="https://bpsc.gov.bd/site/view/notices"
+            name="NationalUniversity",
+            source_url="https://www.nu.ac.bd/recent-news-notice.php"
         )
 
     def scrape_notices(self) -> List[Dict[str, Any]]:
@@ -20,13 +20,16 @@ class BPSCScraper(BaseScraper):
         soup = BeautifulSoup(html, 'html.parser')
         notices = []
 
-        # Parse notice table links
+        # Find all PDF links on the notice board
         for a_tag in soup.find_all('a', href=re.compile(r'\.pdf$', re.IGNORECASE)):
             href = a_tag.get('href')
             title = a_tag.get_text(strip=True)
-            
+
+            if not title and a_tag.parent:
+                title = a_tag.parent.get_text(strip=True)
+
             if not href.startswith('http'):
-                pdf_url = f"https://bpsc.gov.bd{href}" if href.startswith('/') else f"https://bpsc.gov.bd/{href}"
+                pdf_url = f"https://www.nu.ac.bd/{href.lstrip('/')}"
             else:
                 pdf_url = href
 
@@ -34,8 +37,8 @@ class BPSCScraper(BaseScraper):
                 notices.append({
                     'title': title,
                     'pdf_url': pdf_url,
-                    'org_name': 'বাংলাদেশ সরকারি কর্ম কমিশন (BPSC)',
-                    'category': 'govt'
+                    'org_name': 'জাতীয় বিশ্ববিদ্যালয় (National University)',
+                    'category': 'varsity'
                 })
 
-        return notices[:20]  # Process up to 20 latest real notices
+        return notices[:15]  # Process up to 15 latest real notices

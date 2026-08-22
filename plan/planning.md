@@ -503,7 +503,7 @@ All decisions have been agreed and implemented:
 2. **Tier 1 scraper sources**: BPSC, Bangladesh Bank, National University, Ministry of Public Administration, plus the four bank portals (Sonali, Janata, Agrani, Rupali).
 3. **MVP scope**: All core items + eligibility check + bookmarks + push notification topics + Admin portal + English/Bangla toggle.
 4. **State management**: Riverpod 2.x.
-5. **Seed data**: 20 hand-crafted circulars (Bangla, mixed categories, varied deadlines). Hybrid cutoff enabled.
+5. **Live 30-Batch Multi-Portal Scraping**: Scraper pipeline actively crawls up to 30 latest real circulars across BPSC (Govt), Bangladesh Bank (Bank), and National University (Varsity) notice boards, ensuring an authentic feed of real notices even when daily publication counts vary. Hybrid seed fallback retained as a fail-safe.
 6. **BDapps integration**: Mock-first with real cPanel PHP gateway service (`BdappsServiceMock` and `BdappsServiceReal`).
 7. **Design palette**: Forest green `#0A4D3C` + sage `#9EC5B2` + coral `#FF8B8B` + lavender `#B1A7F2` + soft slate background `#F4F6F4`. Hind Siliguri typography.
 8. **Pitch deck**: Google Slides / Markdown pitch documentation.

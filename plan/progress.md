@@ -173,3 +173,18 @@ Build Phase 5 features: Admin Dashboard (PIN-based authentication, scraper healt
 6. Built [`lib/views/settings/settings_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/settings/settings_screen.dart) with language selector, BDapps plan status/management, push notification topic preferences, and secret Admin portal entry.
 7. Updated [`lib/views/home/home_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/home/home_screen.dart) to integrate the Settings icon in the top AppBar.
 8. Resolved all deprecated members across the codebase (`withOpacity` -> `withValues`, `activeColor` -> `activeThumbColor`, `value` -> `initialValue`) and verified **0 issues** on `flutter analyze` and **100% passing tests** on `flutter test`.
+
+---
+
+## Session 8 - 22 August 2026
+
+### Goal
+Upgrade live backend scraping pipeline from small 5-notice slices to a full 30-batch multi-source crawler across BPSC (Govt), Bangladesh Bank (Bank), and National University (Varsity) portals to ensure a rich feed of real notices.
+
+### What we did
+1. Updated [`backend/scrapers/bpsc.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/bpsc.py) to crawl up to 20 latest real BPSC notices.
+2. Updated [`backend/scrapers/bb.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/bb.py) to crawl up to 15 active Bangladesh Bank career circulars.
+3. Created [`backend/scrapers/nu.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/nu.py) to crawl up to 15 latest National University notices and circulars.
+4. Updated [`backend/scrapers/__init__.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/__init__.py) to export `NUScraper`.
+5. Updated [`backend/main.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/main.py) with `TARGET_CIRCULARS_COUNT = 30` to aggregate and digest 30 real notices into Supabase with `source: 'scraped'` and SHA-256 deduplication.
+6. Synchronized [`plan/planning.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/plan/planning.md) (Decision 5 updated) and this progress log.
