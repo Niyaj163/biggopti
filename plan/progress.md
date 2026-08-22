@@ -220,3 +220,17 @@ Fix 404 / Page Not Found errors on circular links by verifying all official port
 4. Cleaned and synchronized Supabase `circulars` table with the verified 200 OK links.
 5. Pushed all updates to GitHub `origin/main`.
 
+---
+
+## Session 11 - 22 August 2026
+
+### Goal
+Filter out expired job circulars whose application deadlines have passed, displaying strictly active circulars where users can apply.
+
+### What we did
+1. Created [`lib/core/utils/deadline_helper.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/core/utils/deadline_helper.dart) to parse Bangla, English, and ISO dates, and determine if an application deadline has passed.
+2. Updated [`lib/providers/circular_provider.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/providers/circular_provider.dart) to filter all circular streams with `DeadlineHelper.isActive()`, ensuring only currently active circulars appear in the feed.
+3. Created comprehensive unit tests in [`test/deadline_helper_test.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/test/deadline_helper_test.dart) (100% passing tests).
+4. Verified **0 issues** on `flutter analyze` and committed & pushed to GitHub `origin/main`.
+
+
