@@ -16,7 +16,6 @@ class AppTheme {
         secondary: AppColors.secondary,
         tertiary: AppColors.accent,
         surface: AppColors.surface,
-        background: AppColors.background,
         onPrimary: Colors.white,
         onSurface: AppColors.textPrimary,
       ),
@@ -34,7 +33,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.06),
+        shadowColor: Colors.black.withValues(alpha: 0.06),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.border, width: 0.8),

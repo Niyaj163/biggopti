@@ -7,6 +7,7 @@ import '../detail/circular_detail_screen.dart';
 import '../bookmarks/bookmarks_screen.dart';
 import '../eligibility/eligibility_screen.dart';
 import '../paywall/paywall_screen.dart';
+import '../settings/settings_screen.dart';
 import 'widgets/category_chip.dart';
 import 'widgets/circular_card.dart';
 
@@ -88,6 +89,18 @@ class HomeScreen extends ConsumerWidget {
                 ),
             ],
           ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'সেটিংস',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
         ],
       ),
       body: Column(
@@ -111,7 +124,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.2),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                     blurRadius: 6,
                     offset: const Offset(0, 3),
                   ),

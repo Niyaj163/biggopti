@@ -153,7 +153,23 @@ Build live web scrapers for Bangladeshi notice portals, integrate `pdfplumber` +
 
 ---
 
+## Session 7 - 22 August 2026
 
+### Goal
+Build Phase 5 features: Admin Dashboard (PIN-based authentication, scraper health metrics, scraper logs table, manual "Run Now" scraper trigger), Settings & Multi-language toggle (Bangla/English), BDapps CaaS subscription manager, resilient Push Notification topic architecture, and resolve all analyzer & test deprecations.
 
-
-
+### What we did
+1. Created [`lib/core/constants/app_config.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/core/constants/app_config.dart) defining default Admin PIN (`2026`), versioning, and app constants.
+2. Created [`lib/models/scraper_log_model.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/models/scraper_log_model.dart) and updated [`lib/core/services/supabase_service.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/core/services/supabase_service.dart) to fetch scraper logs, calculate circular metrics, and record manual scraper execution logs.
+3. Created state providers:
+   - [`lib/providers/locale_provider.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/providers/locale_provider.dart) for seamless Bangla/English UI switching and `SharedPreferences` persistence.
+   - [`lib/providers/subscription_provider.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/providers/subscription_provider.dart) for BDapps CaaS status, OTP requests, and unsubscription handling.
+   - [`lib/providers/admin_provider.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/providers/admin_provider.dart) for real-time scraper log streams and circular database statistics.
+4. Created [`lib/core/services/notification_service.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/core/services/notification_service.dart) for topic subscriptions (`all_circulars`, `urgent_deadlines`, `bank_jobs`, `varsity_notices`).
+5. Built Admin UI & Widgets:
+   - [`lib/views/admin/admin_login_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/admin/admin_login_screen.dart) with custom 4-digit PIN keypad and validation.
+   - [`lib/views/admin/admin_dashboard_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/admin/admin_dashboard_screen.dart) with status cards, DB circular breakdown, and real-time scraper log inspection.
+   - [`lib/views/admin/widgets/scraper_log_table.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/admin/widgets/scraper_log_table.dart) and [`lib/views/admin/widgets/run_now_button.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/admin/widgets/run_now_button.dart).
+6. Built [`lib/views/settings/settings_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/settings/settings_screen.dart) with language selector, BDapps plan status/management, push notification topic preferences, and secret Admin portal entry.
+7. Updated [`lib/views/home/home_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/home/home_screen.dart) to integrate the Settings icon in the top AppBar.
+8. Resolved all deprecated members across the codebase (`withOpacity` -> `withValues`, `activeColor` -> `activeThumbColor`, `value` -> `initialValue`) and verified **0 issues** on `flutter analyze` and **100% passing tests** on `flutter test`.

@@ -101,7 +101,7 @@ class _EligibilityScreenState extends State<EligibilityScreen> {
                         style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _degree,
+                      initialValue: _degree,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -122,7 +122,7 @@ class _EligibilityScreenState extends State<EligibilityScreen> {
                     const SizedBox(height: 16),
 
                     SwitchListTile(
-                      activeColor: AppColors.primary,
+                      activeThumbColor: AppColors.primary,
                       title: const Text('মুক্তিযোদ্ধা / অন্যান্য কোটা আছে?',
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                       value: _isQuota,
@@ -157,7 +157,7 @@ class _EligibilityScreenState extends State<EligibilityScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withOpacity(0.1),
+                  color: AppColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.success),
                 ),
