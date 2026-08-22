@@ -11,13 +11,17 @@ class CircularDetailScreen extends ConsumerWidget {
   const CircularDetailScreen({super.key, required this.circular});
 
   Future<void> _launchPdfUrl(BuildContext context) async {
-    final Uri url = Uri.parse(circular.originalPdfUrl);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
+    try {
+      final Uri url = Uri.parse(circular.originalPdfUrl.trim());
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(url, mode: LaunchMode.platformDefault);
+      }
+    } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('অফিসিয়াল পিডিএফ লিঙ্ক খুলতে পারেনি')),
+          const SnackBar(content: Text('অফিসিয়াল পোর্টাল লিঙ্ক খুলতে পারেনি')),
         );
       }
     }

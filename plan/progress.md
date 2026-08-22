@@ -205,3 +205,18 @@ Implement strict job/academic notice relevance filtering, add Gemini 3.6 Flash m
 3. Added strict keyword whitelists and blacklists in scrapers ([`backend/scrapers/nu.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/nu.py), [`backend/scrapers/bpsc.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/bpsc.py), [`backend/scrapers/dpe.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/dpe.py)).
 4. Purged invalid non-job CV entries from the live Supabase database.
 5. Pushed all updates to GitHub `origin/main`.
+
+---
+
+## Session 10 - 22 August 2026
+
+### Goal
+Fix 404 / Page Not Found errors on circular links by verifying all official portal links live over HTTP, updating the database with 100% verified 200 OK links, and enhancing url_launcher fallback handling in Flutter.
+
+### What we did
+1. Conducted live automated HTTP test verification on all official portal links across BPSC, Bangladesh Bank, DPE, MoPA, BPDB, LGED, DGHS, Railway, Police, NBR, Islami Bank, BRAC Bank, City Bank, DU, RU, JU, and BUET.
+2. Updated [`db/seed_circulars.json`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/db/seed_circulars.json) with 100% verified, live 200 OK links.
+3. Updated [`lib/views/detail/circular_detail_screen.dart`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/lib/views/detail/circular_detail_screen.dart) with enhanced `_launchPdfUrl` error handling and platform-default fallback.
+4. Cleaned and synchronized Supabase `circulars` table with the verified 200 OK links.
+5. Pushed all updates to GitHub `origin/main`.
+
