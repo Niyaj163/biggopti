@@ -188,3 +188,20 @@ Upgrade live backend scraping pipeline from small 5-notice slices to a full 30-b
 4. Updated [`backend/scrapers/__init__.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/__init__.py) to export `NUScraper`.
 5. Updated [`backend/main.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/main.py) with `TARGET_CIRCULARS_COUNT = 30` to aggregate and digest 30 real notices into Supabase with `source: 'scraped'` and SHA-256 deduplication.
 6. Synchronized [`plan/planning.md`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/plan/planning.md) (Decision 5 updated) and this progress log.
+
+---
+
+## Session 9 - 22 August 2026
+
+### Goal
+Implement strict job/academic notice relevance filtering, add Gemini 3.6 Flash multimodal direct OCR for scanned image PDFs, eliminate generic placeholder outputs ("পিডিএফ কন্টেন্ট বিস্তারিত পাওয়া যায় নি"), and purge non-job records from the live Supabase database.
+
+### What we did
+1. Updated [`backend/prompts/parse_circular.txt`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/prompts/parse_circular.txt) with strict validation rules (`is_valid_circular`) rejecting personal CVs, employee profiles, office transfer orders, and office supply tenders, with an explicit ban on generic placeholder phrases.
+2. Upgraded [`backend/ai_parser.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/ai_parser.py):
+   - Migrated to `gemini-3.6-flash`.
+   - Added direct multimodal PDF bytes OCR fallback (`types.Part.from_bytes`) whenever `pdfplumber` encounters scanned image PDFs.
+   - Added automated rejection of non-job documents and empty placeholder outputs.
+3. Added strict keyword whitelists and blacklists in scrapers ([`backend/scrapers/nu.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/nu.py), [`backend/scrapers/bpsc.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/bpsc.py), [`backend/scrapers/dpe.py`](file:///d:/Education/nadb_app_dev/Biggopti/biggopti/backend/scrapers/dpe.py)).
+4. Purged invalid non-job CV entries from the live Supabase database.
+5. Pushed all updates to GitHub `origin/main`.

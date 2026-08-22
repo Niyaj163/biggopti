@@ -5,8 +5,15 @@ from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 from ai_parser import AIParser
-from scrapers import BPSCScraper, BangladeshBankScraper, NUScraper
+from scrapers import BPSCScraper, BangladeshBankScraper, NUScraper, DPEScraper
 
 # Load environment variables
 env_path = Path(__file__).resolve().parent / '.env'
@@ -75,7 +82,7 @@ def run_scrapers():
         return
 
     ai_parser = AIParser(api_key=GEMINI_API_KEY)
-    scrapers = [BPSCScraper(), BangladeshBankScraper(), NUScraper()]
+    scrapers = [BPSCScraper(), DPEScraper(), BangladeshBankScraper(), NUScraper()]
 
     total_processed = 0
 
