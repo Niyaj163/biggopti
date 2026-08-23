@@ -1,0 +1,33 @@
+name: Daily Job Circular Scraper & AI Digest
+
+on:
+  schedule:
+    # Runs every day at 00:00 UTC (06:00 AM Bangladesh Standard Time)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub web UI anytime
+
+jobs:
+  scrape-and-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r backend/requirements.txt
+
+      - name: Run Daily Scraper Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          python backend/main.py
