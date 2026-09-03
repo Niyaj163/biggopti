@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_config.dart';
 import '../core/services/bdapps_service.dart';
+import '../core/services/supabase_service.dart';
 
 class SubscriptionState {
   final bool isSubscribed;
@@ -76,16 +77,41 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
       final statusCode = res['statusCode'] as String?;
       final refNo = res['referenceNo'] as String?;
 
-      if (statusCode == 'S1000' && refNo != null) {
+      if ((statusCode == 'S1000' || res['success'] == true) && refNo != null && refNo.isNotEmpty) {
         state = state.copyWith(
           isLoading: false,
+          isSubscribed: false,
           phoneNumber: msisdn,
           referenceNo: refNo,
         );
         return true;
       } else if (statusCode == 'E1351') {
-        // Already registered
+        // Number is already an active paying subscriber on BDapps!
+        state = state.copyWith(
+          isLoading: false,
+          isSubscribed: false,
+          errorMessage: 'ALREADY_SUBSCRIBED',
+        );
+        return false;
+      } else {
+        final detail = res['statusDetail'] as String? ?? 'OTP পাঠানো সম্ভব হয়নি';
+        state = state.copyWith(isLoading: false, isSubscribed: false, errorMessage: detail);
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> checkSubscriberLogin(String msisdn) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final isRegistered = await _service.checkSubscriptionStatus(msisdn);
+      if (isRegistered) {
+        // Confirmed: subscriber is active and registered on BDapps!
         await _saveSubscription(msisdn, true);
+        await SupabaseService().upsertSubscriber(msisdn, status: 'ACTIVE');
         state = state.copyWith(
           isLoading: false,
           isSubscribed: true,
@@ -93,12 +119,21 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
         );
         return true;
       } else {
-        final detail = res['statusDetail'] as String? ?? 'OTP পাঠানো সম্ভব হয়নি';
-        state = state.copyWith(isLoading: false, errorMessage: detail);
+        // NOT SUBSCRIBED: Access denied!
+        state = state.copyWith(
+          isLoading: false,
+          isSubscribed: false,
+          errorMessage:
+              'এই নম্বরটি এখনো সাবস্ক্রাইব করা নেই! অ্যাপটি ব্যবহার করতে অনুগ্রহ করে প্রথমে "সাবস্ক্রাইব করুন" অপশন থেকে সাবস্ক্রিপশন সম্পন্ন করুন।',
+        );
         return false;
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        isSubscribed: false,
+        errorMessage: 'যাচাই করতে সমস্যা হয়েছে। ইন্টারনেট কানেকশন চেক করে আবার চেষ্টা করুন।',
+      );
       return false;
     }
   }
@@ -112,6 +147,7 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
       final success = await _service.verifyOtp(refNo, otpCode);
       if (success) {
         await _saveSubscription(phone, true);
+        await SupabaseService().upsertSubscriber(phone, status: 'ACTIVE');
         state = state.copyWith(isLoading: false, isSubscribed: true);
         return true;
       } else {
@@ -127,23 +163,64 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
     }
   }
 
-  Future<bool> unsubscribe() async {
-    final phone = state.phoneNumber;
-    if (phone == null || phone.isEmpty) return false;
-
-    state = state.copyWith(isLoading: true);
-    try {
-      final success = await _service.unsubscribe(phone);
-      if (success) {
-        await _saveSubscription(phone, false);
-        state = const SubscriptionState();
-        return true;
-      }
-    } catch (e) {
-      debugPrint('[SubscriptionNotifier] Unsubscribe error: $e');
+  Future<bool> unsubscribe({String? phoneOverride}) async {
+    final phone = phoneOverride ?? state.phoneNumber;
+    if (phone == null || phone.isEmpty) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'সাবস্ক্রিপশন বাতিল করতে মোবাইল নম্বর প্রয়োজন।',
+      );
+      return false;
     }
-    state = state.copyWith(isLoading: false);
-    return false;
+
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final remoteUnsubscribed = await _service.unsubscribe(phone);
+      if (!remoteUnsubscribed) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage:
+              'বিডিঅ্যাপস আনসাবস্ক্রিপশন নিশ্চিত করেনি। অনুগ্রহ করে আবার চেষ্টা করুন অথবা STOP biggopti পাঠান।',
+        );
+        return false;
+      }
+
+      await SupabaseService().updateSubscriberStatus(phone, 'UNREGISTERED');
+      await _clearSubscription();
+      state = const SubscriptionState(
+        isSubscribed: false,
+        phoneNumber: null,
+        isLoading: false,
+      );
+      return true;
+    } catch (e) {
+      debugPrint('[SubscriptionNotifier] Remote unsubscribe error: $e');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage:
+            'আনসাবস্ক্রাইব করতে সমস্যা হয়েছে। ইন্টারনেট কানেকশন চেক করে আবার চেষ্টা করুন।',
+      );
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    await _clearSubscription();
+    state = const SubscriptionState(
+      isSubscribed: false,
+      phoneNumber: null,
+      isLoading: false,
+    );
+  }
+
+  Future<void> _clearSubscription() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_phoneKey);
+      await prefs.remove(_statusKey);
+      await prefs.setBool(_statusKey, false);
+    } catch (_) {}
   }
 
   Future<void> _saveSubscription(String phone, bool isSubscribed) async {

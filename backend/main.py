@@ -14,6 +14,7 @@ if sys.platform == 'win32':
 
 from ai_parser import AIParser
 from scrapers import BPSCScraper, BangladeshBankScraper, NUScraper, DPEScraper
+from bdapps_notifier import broadcast_notice_sms
 
 # Load environment variables
 env_path = Path(__file__).resolve().parent / '.env'
@@ -136,6 +137,15 @@ def run_scrapers():
                         print("[DB] Digested circular inserted into Supabase!")
                         log_scraper_run(supabase, pdf_url, pdf_hash, "SUCCESS")
                         total_processed += 1
+
+                        # Trigger BDapps SMS broadcast for high-priority or urgent notices
+                        if digested_circular.get('is_high_priority'):
+                            print(f"[BDAPPS SMS] High-priority circular detected! Triggering BDapps SMS broadcast...")
+                            broadcast_notice_sms(
+                                title=digested_circular.get('title', ''),
+                                deadline=digested_circular.get('deadline', ''),
+                                org_name=digested_circular.get('org_name', '')
+                            )
                     except Exception as e:
                         print(f"[DB] Insert error: {e}")
                         log_scraper_run(supabase, pdf_url, pdf_hash, "FAILED", str(e))

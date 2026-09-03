@@ -7,5 +7,5 @@ class ApiConstants {
 
   // BDapps CaaS cPanel Proxy URL
   static const String bdappsBaseUrl =
-      'https://www.bdappsdigitalapps.com/NADB26121';
+      'https://www.bdappsdigitalapps.com/NADB26121_finalProject';
 }

@@ -116,5 +116,56 @@ class SupabaseService {
       return false;
     }
   }
+
+  /// Upsert subscriber record into Supabase subscribers table
+  Future<bool> upsertSubscriber(String phoneNumber, {String status = 'ACTIVE'}) async {
+    await initialize();
+    try {
+      await client.from('subscribers').upsert({
+        'phone_number': phoneNumber,
+        'subscription_status': status,
+        'subscribed_at': DateTime.now().toIso8601String(),
+      });
+      debugPrint('[SupabaseService] Successfully upserted subscriber: $phoneNumber ($status)');
+      return true;
+    } catch (e) {
+      debugPrint('[SupabaseService] Upsert subscriber error: $e');
+      return false;
+    }
+  }
+
+  /// Update subscriber status (e.g. UNREGISTERED)
+  Future<bool> updateSubscriberStatus(String phoneNumber, String status) async {
+    await initialize();
+    try {
+      await client.from('subscribers').update({
+        'subscription_status': status,
+      }).eq('phone_number', phoneNumber);
+      debugPrint('[SupabaseService] Updated subscriber status: $phoneNumber -> $status');
+      return true;
+    } catch (e) {
+      debugPrint('[SupabaseService] Update subscriber error: $e');
+      return false;
+    }
+  }
+
+  /// Query if a phone number is registered in Supabase
+  Future<bool> isSubscriberActive(String phoneNumber) async {
+    await initialize();
+    try {
+      final res = await client
+          .from('subscribers')
+          .select('subscription_status')
+          .eq('phone_number', phoneNumber)
+          .maybeSingle();
+      if (res != null) {
+        return res['subscription_status'] == 'ACTIVE' || res['subscription_status'] == 'REGISTERED';
+      }
+    } catch (e) {
+      debugPrint('[SupabaseService] Check subscriber error: $e');
+    }
+    return false;
+  }
 }
+
 

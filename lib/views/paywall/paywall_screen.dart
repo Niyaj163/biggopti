@@ -1,81 +1,105 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/services/bdapps_service.dart';
+import '../../core/constants/app_config.dart';
+import '../../providers/subscription_provider.dart';
 
-class PaywallScreen extends StatefulWidget {
+class PaywallScreen extends ConsumerStatefulWidget {
   const PaywallScreen({super.key});
 
   @override
-  State<PaywallScreen> createState() => _PaywallScreenState();
+  ConsumerState<PaywallScreen> createState() => _PaywallScreenState();
 }
 
-class _PaywallScreenState extends State<PaywallScreen> {
-  final _mobileController = TextEditingController(text: '01800000000');
+class _PaywallScreenState extends ConsumerState<PaywallScreen> {
+  final _mobileController = TextEditingController(text: '01815644470');
   final _otpController = TextEditingController();
-  final BdappsService _bdappsService = BdappsServiceMock(); // Mock service for pitch demo
-
-  bool _isLoading = false;
   bool _otpSent = false;
-  String? _referenceNo;
-  bool _isSubscribed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final subState = ref.read(subscriptionProvider);
+    if (subState.phoneNumber != null && subState.phoneNumber!.isNotEmpty) {
+      _mobileController.text = subState.phoneNumber!;
+    }
+  }
+
+  @override
+  void dispose() {
+    _mobileController.dispose();
+    _otpController.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleSendOtp() async {
-    setState(() => _isLoading = true);
-    final res = await _bdappsService.sendOtp(_mobileController.text);
-    setState(() => _isLoading = false);
+    final mobile = _mobileController.text.trim();
+    if (mobile.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('অনুগ্রহ করে মোবাইল নম্বর লিখুন')),
+      );
+      return;
+    }
 
-    if (res['statusCode'] == 'S1000') {
-      setState(() {
-        _otpSent = true;
-        _referenceNo = res['referenceNo'];
-      });
-      if (mounted) {
+    final success = await ref.read(subscriptionProvider.notifier).sendOtp(mobile);
+
+    if (!mounted) return;
+    if (success) {
+      final isSub = ref.read(subscriptionProvider).isSubscribed;
+      if (isSub) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('আপনার মোবাইলে একটি OTP পিন পাঠানো হয়েছে (Demo PIN: 1234)')),
+          const SnackBar(
+            content: Text('আপনার নম্বরটি ইতিমধ্যে নিবন্ধিত! পরিষেবা সক্রিয় আছে।'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        setState(() => _otpSent = true);
+        final hint = AppConfig.useMockBdapps ? ' (Demo PIN: 1234)' : '';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('আপনার মোবাইলে একটি OTP কোড পাঠানো হয়েছে$hint')),
         );
       }
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res['statusDetail'] ?? 'ওটিপি পাঠাতে ব্যর্থ হয়েছে')),
-        );
-      }
+      final error = ref.read(subscriptionProvider).errorMessage ?? 'ওটিপি পাঠাতে ব্যর্থ হয়েছে';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: AppColors.danger),
+      );
     }
   }
 
   Future<void> _handleVerifyOtp() async {
-    if (_referenceNo == null) return;
-    setState(() => _isLoading = true);
-    final success =
-        await _bdappsService.verifyOtp(_referenceNo!, _otpController.text);
-    setState(() => _isLoading = false);
+    final otp = _otpController.text.trim();
+    if (otp.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('অনুগ্রহ করে ওটিপি কোড লিখুন')),
+      );
+      return;
+    }
 
+    final success = await ref.read(subscriptionProvider.notifier).verifyOtp(otp);
+
+    if (!mounted) return;
     if (success) {
-      setState(() {
-        _isSubscribed = true;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('অভিনন্দন! আপনার বিডিঅ্যাপস সাবস্ক্রিপশন সফলভাবে চালু হয়েছে।'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('অভিনন্দন! আপনার বিডিঅ্যাপস সাবস্ক্রিপশন সফলভাবে চালু হয়েছে।'),
+          backgroundColor: AppColors.success,
+        ),
+      );
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ভুল OTP কোড। সঠিক পিন দিন (Demo: 1234)'),
-            backgroundColor: AppColors.danger,
-          ),
-        );
-      }
+      final error = ref.read(subscriptionProvider).errorMessage ?? 'ভুল OTP কোড। অনুগ্রহ করে সঠিক কোড দিন।';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: AppColors.danger),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final subState = ref.watch(subscriptionProvider);
+    final isLoading = subState.isLoading;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('BDapps SMS সাবস্ক্রিপশন'),
@@ -142,7 +166,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             const SizedBox(height: 24),
 
             // BDapps CaaS OTP Activation Box
-            if (!_isSubscribed) ...[
+            if (!subState.isSubscribed) ...[
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -164,9 +188,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _mobileController,
+                      enabled: !_otpSent && !isLoading,
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
                         labelText: 'মোবাইল নম্বর',
+                        hintText: '018xxxxxxxx / 016xxxxxxxx',
                         prefixIcon: const Icon(Icons.phone_android_rounded),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -177,10 +203,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     if (_otpSent) ...[
                       TextFormField(
                         controller: _otpController,
+                        enabled: !isLoading,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText: 'OTP পিন নম্বর',
-                          hintText: 'যেমন: 1234',
+                          hintText: AppConfig.useMockBdapps ? 'যেমন: 1234' : 'আপনার মোবাইলে আসা কোড',
                           prefixIcon: const Icon(Icons.lock_outline_rounded),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -192,13 +219,24 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         width: double.infinity,
                         height: 48,
                         child: ElevatedButton(
-                          onPressed: _isLoading ? null : _handleVerifyOtp,
+                          onPressed: isLoading ? null : _handleVerifyOtp,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.accent,
                           ),
-                          child: _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
                               : const Text('পাসকোড নিশ্চিত করুন'),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Center(
+                        child: TextButton(
+                          onPressed: isLoading ? null : () => setState(() => _otpSent = false),
+                          child: const Text('নম্বর পরিবর্তন করুন'),
                         ),
                       ),
                     ] else ...[
@@ -206,9 +244,13 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         width: double.infinity,
                         height: 48,
                         child: ElevatedButton(
-                          onPressed: _isLoading ? null : _handleSendOtp,
-                          child: _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
+                          onPressed: isLoading ? null : _handleSendOtp,
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
                               : const Text('সাবস্ক্রাইব করুন (২.৭৮ টাকা/দিন)'),
                         ),
                       ),
@@ -219,23 +261,29 @@ class _PaywallScreenState extends State<PaywallScreen> {
             ] else ...[
               // Active Status
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: AppColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.success, width: 1.5),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(Icons.check_circle_rounded,
+                    const Icon(Icons.check_circle_rounded,
                         color: AppColors.success, size: 48),
-                    SizedBox(height: 8),
-                    Text(
+                    const SizedBox(height: 8),
+                    const Text(
                       'বিডিঅ্যাপস পরিষেবা সক্রিয় আছে',
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: AppColors.success),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'নিবন্ধিত মোবাইল নম্বর: ${subState.phoneNumber ?? ''}',
+                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                     ),
                   ],
                 ),

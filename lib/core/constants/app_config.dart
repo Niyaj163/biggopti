@@ -15,5 +15,5 @@ class AppConfig {
   static const String defaultLocale = 'bn';
 
   /// Default mock BDapps toggle (true = mock OTP in dev, false = real cPanel gateway)
-  static const bool useMockBdapps = true;
+  static const bool useMockBdapps = false;
 }

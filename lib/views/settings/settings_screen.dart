@@ -6,6 +6,7 @@ import '../../core/services/notification_service.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/subscription_provider.dart';
 import '../admin/admin_login_screen.dart';
+import '../auth/login_screen.dart';
 import '../paywall/paywall_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -36,6 +37,144 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _notificationService.isTopicSubscribed('all_circulars');
       });
     }
+  }
+
+  Future<void> _showUnsubscribeDialog(BuildContext context, bool isBangla) async {
+    final nav = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final subState = ref.read(subscriptionProvider);
+    final phoneController = TextEditingController(text: subState.phoneNumber ?? '');
+    bool isProcessing = false;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.phonelink_erase_rounded, color: AppColors.danger, size: 24),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isBangla ? 'সাবস্ক্রিপশন বাতিল' : 'Cancel Subscription',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isBangla
+                    ? 'আপনার রবি বা এয়ারটেল নম্বরের দৈনিক এসএমএস ডাইজেস্ট সার্ভিসটি অবিলম্বে বন্ধ করতে চান?'
+                    : 'Do you want to stop daily SMS alerts for your Robi/Airtel number?',
+                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
+                enabled: !isProcessing,
+                decoration: InputDecoration(
+                  labelText: isBangla ? 'মোবাইল নম্বর (১১ ডিজিট)' : 'Mobile Number (11 digits)',
+                  hintText: '018XXXXXXXX / 016XXXXXXXX',
+                  prefixIcon: const Icon(Icons.phone_android_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                isBangla
+                    ? 'নোট: আনসাবস্ক্রাইব করার সাথে সাথে দৈনিক ২.৭৮ টাকা চার্জিং বন্ধ হবে।'
+                    : 'Note: Daily 2.78 BDT charging will cease immediately.',
+                style: const TextStyle(fontSize: 11, color: AppColors.textLight),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isProcessing ? null : () => Navigator.pop(ctx),
+              child: Text(isBangla ? 'ফিরে যান' : 'Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.danger,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: isProcessing
+                  ? null
+                  : () async {
+                      final input = phoneController.text.trim();
+                      if (input.length < 11) {
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(isBangla
+                                ? 'অনুগ্রহ করে সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন'
+                                : 'Please enter a valid 11-digit mobile number'),
+                            backgroundColor: AppColors.danger,
+                          ),
+                        );
+                        return;
+                      }
+
+                      setDialogState(() => isProcessing = true);
+                      final success = await ref
+                          .read(subscriptionProvider.notifier)
+                          .unsubscribe(phoneOverride: input);
+
+                      if (!success) {
+                        setDialogState(() => isProcessing = false);
+                        final error = ref.read(subscriptionProvider).errorMessage;
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(error ??
+                                (isBangla
+                                    ? 'আনসাবস্ক্রিপশন নিশ্চিত হয়নি। আবার চেষ্টা করুন।'
+                                    : 'Unsubscription was not confirmed. Please try again.')),
+                            backgroundColor: AppColors.danger,
+                            duration: const Duration(seconds: 5),
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (dialogCtx.mounted) {
+                        Navigator.pop(dialogCtx);
+                      }
+                      if (mounted) {
+                        nav.pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          (route) => false,
+                        );
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(isBangla
+                                ? 'আপনার সাবস্ক্রিপশন সফলভাবে বাতিল করা হয়েছে এবং আপনাকে লগআউট করা হয়েছে।'
+                                : 'Subscription cancelled successfully and you have been logged out.'),
+                            backgroundColor: AppColors.success,
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                      }
+                    },
+              child: isProcessing
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(isBangla ? 'আনসাবস্ক্রাইব করুন' : 'Unsubscribe'),
+            ),
+          ],
+        ),
+      ),
+    );
+    phoneController.dispose();
   }
 
   @override
@@ -154,51 +293,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ),
                     ),
-                    if (subState.isSubscribed) ...[
-                      const SizedBox(width: 8),
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white70,
-                          side: const BorderSide(color: Colors.white30),
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: () async {
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('আনসাবস্ক্রাইব নিশ্চিত করুন'),
-                              content: const Text(
-                                'আপনি কি নিশ্চিত যে আপনি দৈনিক এসএমএস নোটিফিকেশন বন্ধ করতে চান?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, false),
-                                  child: const Text('না'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text('হ্যাঁ, আনসাবস্ক্রাইব করুন',
-                                      style: TextStyle(color: AppColors.danger)),
-                                ),
-                              ],
-                            ),
-                          );
-                          if (confirm == true) {
-                            await ref.read(subscriptionProvider.notifier).unsubscribe();
-                          }
-                        },
-                        child: Text(
-                          isBangla ? 'বাতিল' : 'Unsub',
-                          style: const TextStyle(fontSize: 12),
+                    const SizedBox(width: 8),
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: const BorderSide(color: Colors.white30),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                    ],
+                      onPressed: () => _showUnsubscribeDialog(context, isBangla),
+                      child: Text(
+                        isBangla ? 'আনসাবস্ক্রাইব' : 'Unsub',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
                   ],
                 ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Dedicated Unsubscribe Card
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            elevation: 0,
+            child: ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.danger.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.phonelink_erase_rounded, color: AppColors.danger, size: 22),
+              ),
+              title: Text(
+                isBangla ? 'এসএমএস সাবস্ক্রিপশন বাতিল (Unsubscribe)' : 'Cancel SMS Subscription',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+              ),
+              subtitle: Text(
+                isBangla
+                    ? 'যেকোনো নম্বর থেকে দৈনিক চার্জিং ও নোটিফিকেশন বন্ধ করুন'
+                    : 'Stop daily alerts & recurring charging for any number',
+                style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+              onTap: () => _showUnsubscribeDialog(context, isBangla),
             ),
           ),
 
@@ -305,6 +448,61 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           const SizedBox(height: 20),
+
+          // Account Section
+          if (subState.isSubscribed) ...[
+            _buildSectionHeader(isBangla ? 'অ্যাকাউন্ট' : 'Account'),
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: ListTile(
+                leading: const Icon(Icons.logout_rounded, color: AppColors.danger),
+                title: Text(
+                  isBangla ? 'লগআউট / নম্বর পরিবর্তন' : 'Logout / Change Number',
+                  style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.danger),
+                ),
+                subtitle: Text(
+                  isBangla
+                      ? 'বর্তমান নম্বর থেকে বের হয়ে নতুন নম্বরে লগইন করুন'
+                      : 'Sign out and login with a different number',
+                ),
+                onTap: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(isBangla ? 'লগআউট নিশ্চিতকরণ' : 'Confirm Logout'),
+                      content: Text(
+                        isBangla
+                            ? 'আপনি কি লগআউট করে লগইন স্ক্রিনে ফিরে যেতে চান?'
+                            : 'Do you want to log out and return to the login screen?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(isBangla ? 'না' : 'Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+                          child: Text(isBangla ? 'হ্যাঁ, লগআউট' : 'Logout'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) {
+                    await ref.read(subscriptionProvider.notifier).logout();
+                    if (context.mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        (route) => false,
+                      );
+                    }
+                  }
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
 
           // Admin Section
           _buildSectionHeader(isBangla ? 'প্রশাসনিক কন্ট্রোল' : 'Administration'),
